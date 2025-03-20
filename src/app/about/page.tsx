@@ -73,14 +73,14 @@ const About = () => {
         <div className="flex justify-center space-x-8">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-80">
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-              "KwikBuy has completely changed the way I shop online. The shipping is fast, and the customer support is top-notch!"
+              &quote;KwikBuy has completely changed the way I shop online. The shipping is fast, and the customer support is top-notch!&quote;
             </p>
             <p className="font-semibold text-gray-800 dark:text-gray-200">Sarah M.</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">Loyal Customer</p>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-80">
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-              "I found everything I needed on KwikBuy! Excellent variety and seamless experience. Highly recommend!"
+              &quote;I found everything I needed on KwikBuy! Excellent variety and seamless experience. Highly recommend!&quote;
             </p>
             <p className="font-semibold text-gray-800 dark:text-gray-200">John D.</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">Happy Shopper</p>

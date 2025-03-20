@@ -6,7 +6,7 @@ import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { Pacifico } from 'next/font/google';
-import { FiLogIn, FiUserPlus, FiSun, FiMoon, FiMenu, FiX } from "react-icons/fi";
+import { FiLogIn, FiSun, FiMoon, FiMenu, FiX } from "react-icons/fi";
 
 const pacifico = Pacifico({
   weight: '400',
