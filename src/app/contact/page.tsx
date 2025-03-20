@@ -12,7 +12,7 @@ const ContactPage = () => {
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold text-blue-600 dark:text-yellow-400 mb-4">Get In Touch With Us! 📞💬</h1>
         <p className="text-lg text-gray-700 dark:text-gray-300">
-          Whether you have a question or just wanna say &quote;Howzit!&quote;, we&apos;re here for you!
+          Whether you have a question or just wanna say &quot;Howzit!&quot;, we&apos;re here for you!
         </p>
       </header>
 
