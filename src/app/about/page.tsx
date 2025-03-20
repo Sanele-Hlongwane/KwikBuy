@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { FiInfo, FiShoppingCart, FiUserCheck, FiHeadphones } from "react-icons/fi";
-import { Button } from "@/components/ui/button"; // Assuming you're using the Button component
+import { FiShoppingCart, FiUserCheck, FiHeadphones } from "react-icons/fi";
+import { Button } from "@/components/ui/button"; // Assuming you&apos;re using the Button component
 
 const About = () => {
   return (
@@ -21,7 +21,7 @@ const About = () => {
       <section className="bg-gradient-to-r from-blue-600 to-blue-400 p-12 text-white rounded-lg shadow-lg mb-12">
         <h2 className="text-3xl font-bold mb-6">Welcome to KwikBuy!</h2>
         <p className="text-lg">
-          KwikBuy is a premium online shopping platform designed to deliver the most seamless and luxurious shopping experience. Whether it's the latest gadgets, stylish fashion, or unique home decor, KwikBuy has it all, with unbeatable speed and quality.
+          KwikBuy is a premium online shopping platform designed to deliver the most seamless and luxurious shopping experience. Whether it&apos;s the latest gadgets, stylish fashion, or unique home decor, KwikBuy has it all, with unbeatable speed and quality.
         </p>
       </section>
 
@@ -107,7 +107,7 @@ const About = () => {
           Get in Touch
         </h2>
         <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-          Have any questions or feedback? We'd love to hear from you! Reach out to our team and we'll get back to you as soon as possible.
+          Have any questions or feedback? We&apos;d love to hear from you! Reach out to our team and we&apos;ll get back to you as soon as possible.
         </p>
         <Link href="/contact">
           <Button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">

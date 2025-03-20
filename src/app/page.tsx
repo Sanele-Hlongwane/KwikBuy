@@ -13,7 +13,7 @@ export default function HomePage() {
           Welcome to KwikBuy 🛒
         </h1>
         <p className="mt-6 text-xl text-gray-600 dark:text-gray-300">
-          Mzansi's #1 E-commerce platform — where shopping meets speed 😎💨
+          Mzansi&apos;s #1 E-commerce platform — where shopping meets speed 😎💨
         </p>
         <div className="mt-10 flex justify-center gap-6">
           <Link href="/shop">
@@ -33,7 +33,7 @@ export default function HomePage() {
             <CardTitle className="mt-4 text-2xl">Fast Delivery</CardTitle>
           </CardHeader>
           <CardContent className="text-gray-600 dark:text-gray-300">
-            We deliver across Mzansi faster than your gogo's gossip 😅🚚💨
+            We deliver across Mzansi faster than your gogo&apos;s gossip 😅🚚💨
           </CardContent>
         </Card>
 

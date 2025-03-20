@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { FiMail, FiPhone, FiMapPin, FiSend } from 'react-icons/fi';
+import React from "react";
+import Link from "next/link";
+import { FiMail, FiPhone, FiMapPin, FiSend } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 
 const ContactPage = () => {
@@ -12,7 +12,7 @@ const ContactPage = () => {
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold text-blue-600 dark:text-yellow-400 mb-4">Get In Touch With Us! 📞💬</h1>
         <p className="text-lg text-gray-700 dark:text-gray-300">
-          Whether you have a question or just wanna say "Howzit!", we're here for you!
+          Whether you have a question or just wanna say "Howzit!", we&apos;re here for you!
         </p>
       </header>
 
