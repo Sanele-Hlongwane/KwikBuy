@@ -20,7 +20,7 @@ export const Header = () => {
   return (
     <header className="flex flex-wrap justify-between items-center p-6 bg-white dark:bg-black shadow-md">
       {/* Logo */}
-      <h1 className={`text-4xl ${pacifico.className} text-yellow-600 dark:text-yellow-400`}>
+      <h1 className={`text-4xl ${pacifico.className} text-yellow-400 dark:text-yellow-400`}>
         KwikBuy 🛒
       </h1>
 
@@ -62,7 +62,7 @@ export const Header = () => {
           {/* Signed Out Section */}
           <SignedOut>
             <Link href="/sign-in">
-              <Button className="bg-blue-600 text-white px-4 py-2 rounded-lg dark:hover:bg-gray-400 hover:bg-blue-700">
+              <Button className="bg-blue-600 dark:bg-blue-800 text-white px-4 py-2 rounded-lg dark:hover:bg-blue-900 hover:bg-blue-700">
                 <FiLogIn />
                 <span>Sign In/Up</span>
               </Button>
