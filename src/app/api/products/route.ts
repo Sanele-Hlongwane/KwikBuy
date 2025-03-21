@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
-  const { name, description, price, images } = await req.json(); // 🎯 images is now an array
+  const { name, description, price, imageUrls } = await req.json();
+
+  console.log("Received Image URLs:", imageUrls);
 
   try {
     const product = await prisma.product.create({
@@ -10,7 +12,7 @@ export async function POST(req: Request) {
         name, 
         description, 
         price, 
-        images, // 📸 Save the array of image URLs
+        imageUrls, // 📸 Save the array of image URLs
       },
     });
 

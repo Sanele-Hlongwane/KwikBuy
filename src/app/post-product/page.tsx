@@ -5,12 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from '@/lib/supabaseClient';
 
 export default function PostProductPage() {
   const [name, setName] = useState('');
@@ -20,53 +15,70 @@ export default function PostProductPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // 👇 Reusable upload function (copied from your syntax)
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('products') // 📂 Create this 'products' bucket in Supabase
+      .upload(path, file);
+
+    if (uploadError) {
+      throw new Error(`Failed to upload image: ${uploadError.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('products')
+      .getPublicUrl(path);
+
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL');
+    }
+
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     let imageUrls: string[] = [];
 
-    // Upload images to Supabase
-    if (images) {
-      for (const image of Array.from(images)) {
-        const { data, error } = await supabase.storage
-          .from('products') // 👈 Create 'products' bucket in Supabase
-          .upload(`product-${Date.now()}-${image.name}`, image);
-
-        if (error) {
-          console.error('❌ Image upload failed:', error);
-          alert('Failed to upload image!');
-          setLoading(false);
-          return;
+    try {
+      // 👇 Loop through the uploaded files and use the uploadFile function
+      if (images) {
+        for (const image of Array.from(images)) {
+          const path = `product-${Date.now()}-${image.name}`;
+          const publicUrl = await uploadFile(image, path);
+          imageUrls.push(publicUrl);
         }
-
-        const publicURL = supabase.storage
-          .from('products')
-          .getPublicUrl(data.path).data.publicUrl;
-
-        imageUrls.push(publicURL);
       }
-    }
 
-    // Submit product data with image URLs array
-    const res = await fetch('/api/products', {
-      method: 'POST',
-      body: JSON.stringify({
-        name,
-        description,
-        price: parseFloat(price),
-        imageUrls,
-      }),
-      headers: { 'Content-Type': 'application/json' },
-    });
+      // 👇 Log the image URLs to the console
+      console.log('Uploaded image URLs:', imageUrls);
 
-    if (res.ok) {
-      alert('🎉 Product posted successfully!');
-      router.push('/shop');
-    } else {
-      alert('❌ Failed to post product. Try again!');
+      // 👇 Send data to your API with imageUrls array
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          description,
+          price: parseFloat(price),
+          imageUrls,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (res.ok) {
+        alert('🎉 Product posted successfully!');
+        router.push('/shop');
+      } else {
+        alert('❌ Failed to post product. Try again!');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -100,7 +112,7 @@ export default function PostProductPage() {
         />
 
         <Button type="submit" className="bg-blue-700 text-white hover:bg-blue-800" disabled={loading}>
-          {loading ? 'Posting...' : 'Post Product'}
+          {loading ? 'Uploading & Posting...' : 'Post Product'}
         </Button>
       </form>
     </div>
