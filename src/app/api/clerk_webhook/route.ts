@@ -11,7 +11,6 @@ export async function POST(req: Request) {
   }
 
   const wh = new Webhook(SIGNING_SECRET);
-
   const headerPayload = await headers();
   const svix_id = headerPayload.get('svix-id');
   const svix_timestamp = headerPayload.get('svix-timestamp');
@@ -42,8 +41,8 @@ export async function POST(req: Request) {
     try {
       const newUser = await prisma.user.create({
         data: {
-          clerkUserId: id, // ✅ Ensure this matches your schema
-          email: email_addresses[0].email_address,
+          clerkUserId: id, // ✅ This now exists in the schema
+          email: email_addresses[0]?.email_address,
           name: first_name || 'Unknown',
           imageUrl: image_url || '',
         },
