@@ -6,13 +6,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-02-24.acacia',
 });
 
-// Define the expected request body type
-interface RequestBody {
-  priceId: number;  // Assuming priceId is the amount
-}
-
 export async function POST(req: Request) {
-  const { priceId } = await req.json();  // Get the priceId from the body
+  const { priceId } = await req.json();
   const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/success`;
   const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`;
 
@@ -44,7 +39,6 @@ export async function POST(req: Request) {
       cancel_url: cancelUrl,
     });
 
-    // Return the session ID to the client
     return NextResponse.json({ id: session.id });
   } catch (error) {
     console.error('Stripe error:', error);

@@ -1,7 +1,7 @@
-// src/utils/stripe.ts
-import { loadStripe } from "@stripe/stripe-js";
+// src/lib/stripe.ts
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 
-let stripePromise: Promise<any>;
+let stripePromise: Promise<Stripe | null>;
 
 export const getStripe = () => {
   if (!stripePromise) {
