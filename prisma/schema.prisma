@@ -20,7 +20,7 @@ model Product {
 
 model User {
   id          Int      @id @default(autoincrement())
-  clerkUserId String?  // This is where we'll store the Clerk user ID
+  clerkUserId  String   @unique
   email       String   @unique
   name        String?  // Optional: User's name
   imageUrl    String?  // Optional: User's image URL
