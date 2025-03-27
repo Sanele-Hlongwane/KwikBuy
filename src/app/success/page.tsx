@@ -3,19 +3,38 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export const metadata = {
-  title: "Success - KwikBuy",
-  description: "Your signup or payment was successful!",
-};
-
 export default function SuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const fetchData = async () => {
+        try {
+          const response = await fetch("/api/subscription/success", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({})  // Add an empty object or any other necessary data if required
+          });
+      
+          if (response.ok) {
+            console.log("User details saved successfully!");
+          } else {
+            console.error("Failed to save user details:", await response.json());
+          }
+        } catch (error) {
+          console.error("Error during API call:", error);
+        }
+      };
+
+    // Call the backend to save user info and subscription details
+    fetchData();
+
     // Auto-redirect to home after 5 seconds
     const timer = setTimeout(() => {
       router.push("/");
     }, 5000);
+
     return () => clearTimeout(timer);
   }, [router]);
 

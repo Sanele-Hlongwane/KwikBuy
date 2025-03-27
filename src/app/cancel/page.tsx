@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react"; // <-- Add this import
 import { useRouter } from "next/navigation";
-
-export const metadata = {
-  title: "Payment Canceled - KwikBuy",
-  description: "Your payment was canceled.",
-};
 
 export default function CancelPage() {
   const router = useRouter();
@@ -14,7 +9,7 @@ export default function CancelPage() {
   useEffect(() => {
     // Auto-redirect to home after 5 seconds
     const timer = setTimeout(() => {
-      router.push("/");
+      router.push("/pricing");
     }, 5000);
     return () => clearTimeout(timer);
   }, [router]);
