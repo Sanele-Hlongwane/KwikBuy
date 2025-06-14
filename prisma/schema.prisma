@@ -8,18 +8,25 @@ generator client {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String
   price       Float
-  imageUrls   String[] 
-  createdAt   DateTime @default(now())
+  images      String[]
+  cities      String[]
+  suburbs     String[]
+  createdAt   DateTime  @default(now())
+
+  userId String
+user   User @relation(fields: [userId], references: [clerkUserId])
+
 }
+
 
 model User {
   id              Int      @id @default(autoincrement())
   clerkUserId     String   @unique
-  stripeCustomerId String? @unique  
+  stripeCustomerId String?  @unique  
   email           String   @unique
   name            String?  
   imageUrl        String?  
@@ -29,6 +36,7 @@ model User {
   updatedAt       DateTime @updatedAt
 
   orders          Order[]  @relation("UserOrders")
+  products        Product[]  // <-- Add this line to fix the error
 }
 
 model Order {
