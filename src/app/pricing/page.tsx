@@ -1,157 +1,189 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FiCheckCircle } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
-import { getStripe } from '@/lib/stripe';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FiCheckCircle } from 'react-icons/fi';
 
-const Pricing = () => {
-  const [isYearly, setIsYearly] = useState(false);
+type PlanType = {
+  key: 'starter' | 'premium' | 'seller';
+  name: string;
+  price: number;
+  priceMonthly?: number;
+  priceYearly?: number;
+  features: string[];
+  emoji: string;
+};
+
+const monthlyPricing = { premium: 49, seller: 199 };
+const yearlyPricing = { premium: 49 * 12 * 0.8, seller: 199 * 12 * 0.8 };
+
+const plans: PlanType[] = [
+  {
+    key: "starter",
+    name: "Starter Plan",
+    price: 0,
+    features: ["Access all products", "Standard Delivery", "Customer Support"],
+    emoji: "🎉",
+  },
+  {
+    key: "premium",
+    name: "Premium Buyer",
+    price: monthlyPricing.premium,
+    priceMonthly: monthlyPricing.premium,
+    priceYearly: yearlyPricing.premium,
+    features: ["FREE Express Delivery", "Early Access to Deals", "24/7 Premium Support"],
+    emoji: "🚀",
+  },
+  {
+    key: "seller",
+    name: "Seller Pro",
+    price: monthlyPricing.seller,
+    priceMonthly: monthlyPricing.seller,
+    priceYearly: yearlyPricing.seller,
+    features: ["Unlimited Listings", "Featured Ads", "Dedicated Account Manager"],
+    emoji: "💼",
+  },
+];
+
+// 👑 Stripe URLs properly mapped, like a king’s royal map 📜
+const stripeUrls = {
+  premium: {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_PREM_MONTHLY!,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_PREM_YEARLY!,
+  },
+  seller: {
+    monthly: process.env.NEXT_PUBLIC_STRIPE_MONTHLY_VIP!,
+    yearly: process.env.NEXT_PUBLIC_STRIPE_YEARLY_VIP!,
+  }
+};
+
+export default function PricingPage() {
   const { user } = useUser();
   const { openSignIn } = useClerk();
+  const [isYearly, setIsYearly] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const monthlyPricing = { premium: 49, seller: 199 };
-  const yearlyPricing = {
-    premium: 49 * 12 * 0.8, // 20% discount for yearly plan
-    seller: 199 * 12 * 0.8,  // 20% discount for yearly plan
-  };
+  useEffect(() => {
+    if (!user) return;
 
-  const handleCheckout = async (priceId: number) => {
-    if (!user) {
-      openSignIn();
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch('/api/get-customer-subscription');
+        const data = await res.json();
+        if (res.ok) {
+          setCurrentPlan(data.currentPlan);
+        } else {
+          toast.error(data.message || "Could not get your current subscription.");
+        }
+      } catch (err) {
+        toast.error("Could not fetch subscription details.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, [user]);
+
+  const handleCheckout = (plan: PlanType) => {
+    if (!user) return openSignIn();
+
+    if (plan.price === 0) {
+      toast.info("This plan doesn’t require payment 🥳");
       return;
     }
 
-    try {
-      // Send the priceId to your API route to create a Stripe checkout session
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ priceId }),
-      });
+    const url = stripeUrls[plan.key as 'premium' | 'seller']?.[isYearly ? 'yearly' : 'monthly'];
 
-      const { id } = await response.json(); // The session id from the Stripe API
-
-      // Redirect to Stripe Checkout
-      const stripe = await getStripe();  // Get the Stripe instance
-
-      if (stripe) {
-        stripe.redirectToCheckout({ sessionId: id });
-      } else {
-        console.error('Stripe.js failed to load');
-        alert('Something went wrong, please try again!');
-      }
-    } catch (error) {
-      console.error('Error during checkout session creation:', error);
-      alert('Something went wrong, please try again!');
+    if (!url) {
+      toast.error("Invalid plan configuration 🤕");
+      return;
     }
+
+    const checkoutUrl = `${url}?prefilled_email=${encodeURIComponent(user.emailAddresses[0]?.emailAddress ?? '')}`;
+    window.location.href = checkoutUrl;
   };
 
+  const renderPlanCard = (plan: PlanType) => {
+    const isCurrent = currentPlan === plan.key || (plan.key === "starter" && currentPlan === "free");
+    const highlight = isCurrent;
 
-  const togglePricing = () => setIsYearly(!isYearly);
+    return (
+      <Card
+        key={plan.key}
+        className={`transition-all border rounded-2xl shadow-xl p-4 ${
+          highlight
+            ? 'bg-gradient-to-tr from-gray-400 to-gray-600 text-white scale-105 dark:from-gray-700 dark:to-gray-900'
+            : 'bg-white dark:bg-gray-800'
+        }`}
+      >
+        <CardHeader>
+          <CardTitle className="text-2xl">{plan.name} {plan.emoji}</CardTitle>
+          {plan.price !== 0 && (
+            <p className={`text-3xl font-bold ${highlight ? 'text-white' : 'text-blue-700 dark:text-yellow-300'}`}>
+              R{(isYearly ? plan.priceYearly : plan.priceMonthly)?.toFixed(2)}
+              <span className="text-lg ml-1">{isYearly ? "/year" : "/month"}</span>
+            </p>
+          )}
+          {isYearly && plan.price !== 0 && (
+            <p className="text-green-300 text-sm">Save 20% with yearly!</p>
+          )}
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 my-4">
+            {plan.features.map((feature, i) => (
+              <li key={i} className="flex items-center">
+                <FiCheckCircle className="mr-2 text-green-400" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+
+          <Button
+            onClick={() => handleCheckout(plan)}
+            disabled={isCurrent}
+            className={`w-full ${
+              isCurrent
+                ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                : highlight
+                ? 'bg-white text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {isCurrent ? "Current Plan ✅" : "Choose Plan"}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 md:p-12">
-      <header className="text-center mb-16">
-        <h1 className="text-5xl font-extrabold text-blue-700 dark:text-yellow-400">💸 KwikBuy Pricing Plans</h1>
-        <p className="text-xl mt-4 text-gray-600 dark:text-gray-300">Premium vibes, simple prices. No hidden costs, just vibes 😉</p>
-        <Button onClick={togglePricing} className="mt-4 text-blue-600 hover:text-blue-700">
-          {isYearly ? 'Switch to Monthly' : 'Switch to Yearly'}
+    <div className="max-w-6xl mx-auto py-12 px-4">
+      <div className="flex flex-col items-center mb-12">
+        <h1 className="text-4xl font-bold text-blue-700 dark:text-yellow-400 mb-2">💸 Choose Your KwikBuy Plan</h1>
+        <p className="text-gray-600 dark:text-gray-300">Premium vibes, honest pricing. Get the best or stay free. 👑</p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => setIsYearly(!isYearly)}
+        >
+          {isYearly ? "Switch to Monthly" : "Switch to Yearly"}
         </Button>
-      </header>
+      </div>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-10">
-        {/* Free Plan */}
-        <Card className="shadow-xl border border-gray-200 dark:border-slate-700 dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl">Starter Plan 🎉</CardTitle>
-            <p className="text-4xl font-bold text-blue-600 dark:text-yellow-400">FREE</p>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4 mt-6 text-gray-600 dark:text-gray-300">
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Access all products</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Standard Delivery</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Customer Support</li>
-            </ul>
-            <Button
-              onClick={() => handleCheckout(0)}  // Send 0 for the free plan
-              className="mt-8 w-full bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Get Started
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Premium Buyer */}
-        <Card className="bg-gradient-to-br from-gray-700 to-gray-500 dark:from-gray-900 dark:to-gray-800 text-white shadow-2xl scale-105">
-          <CardHeader>
-            <CardTitle className="text-2xl">Premium Buyer 🚀</CardTitle>
-            <p className="text-4xl font-bold">
-              R{isYearly ? yearlyPricing.premium.toFixed(2) : monthlyPricing.premium}
-              <span className="text-lg">/{isYearly ? 'year' : 'month'}</span>
-            </p>
-            {isYearly && <p className="text-sm text-green-400">Save 20% with yearly plan!</p>}
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4 mt-6">
-              <li><FiCheckCircle className="inline mr-2 text-green-300" /> FREE Express Delivery</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-300" /> Early Access to Deals</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-300" /> 24/7 Premium Support</li>
-            </ul>
-            <Button
-              onClick={() => handleCheckout(isYearly ? yearlyPricing.premium * 100 : monthlyPricing.premium * 100)}  // Price in cents
-              className="mt-8 w-full bg-white text-blue-700 hover:bg-gray-200"
-            >
-              Upgrade Now
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Seller Pro */}
-        <Card className="shadow-xl border border-gray-200 dark:border-slate-700 dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl">Seller Pro 💼</CardTitle>
-            <p className="text-4xl font-bold text-blue-600 dark:text-yellow-400">
-              R{isYearly ? yearlyPricing.seller.toFixed(2) : monthlyPricing.seller}
-              <span className="text-lg">/{isYearly ? 'year' : 'month'}</span>
-            </p>
-            {isYearly && <p className="text-sm text-green-400">Save 20% with yearly plan!</p>}
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4 mt-6 text-gray-600 dark:text-gray-300">
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Unlimited Listings</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Featured Ads</li>
-              <li><FiCheckCircle className="inline mr-2 text-green-500" /> Dedicated Account Manager</li>
-            </ul>
-            <Button
-              onClick={() => handleCheckout(isYearly ? yearlyPricing.seller * 100 : monthlyPricing.seller * 100)}  // Price in cents
-              className="mt-8 w-full bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Become a Seller
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* CTA */}
-      <section className="text-center mt-20 bg-gray-100 dark:bg-slate-900 p-10 rounded-2xl shadow-lg">
-        <h2 className="text-4xl font-bold mb-4">Ready to Level Up? 🎯</h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-          Pick your plan and start flexing with KwikBuy today 😎✨
-        </p>
-        <Link href="/sign-up">
-          <Button className="bg-blue-700 text-white hover:bg-blue-800 px-8 py-4 text-lg rounded-xl">
-            Join KwikBuy Now
-          </Button>
-        </Link>
-      </section>
+      {loading ? (
+        <p className="text-center text-gray-500">Loading your subscription... ⏳</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map(renderPlanCard)}
+        </div>
+      )}
     </div>
   );
-};
-
-export default Pricing;
+}

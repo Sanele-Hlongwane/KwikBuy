@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from 'next-themes';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Header } from "@/components/Header";
+import { ToastContainer } from "react-toastify";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
@@ -40,7 +41,18 @@ export default function RootLayout({
             <Header />
 
             {/* Page Content */}
-            <main className="min-h-screen">{children}</main>
+            <main className="min-h-screen">
+              <ToastContainer
+                  position="top-right"
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  closeOnClick
+                  pauseOnHover
+                  draggable
+                  pauseOnFocusLoss
+                />
+              {children}
+            </main>
 
             {/* Footer */}
             <Footer />

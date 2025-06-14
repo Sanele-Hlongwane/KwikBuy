@@ -18,23 +18,38 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Create the Stripe checkout session with email pre-filled
+    // 🔥 Step 1: Check if Stripe customer exists OR create one
+    let stripeCustomerId = user.privateMetadata?.stripeCustomerId as string | undefined;
+
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.emailAddresses[0]?.emailAddress,
+        metadata: {
+          clerkUserId: user.id,
+        },
+      });
+
+      stripeCustomerId = customer.id;
+
+      // Update the user's metadata in Clerk with Stripe customer ID
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/save-stripe-customer-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, stripeCustomerId }),
+      });
+    }
+
+    // 🔥 Step 2: Create Checkout Session, email locked to customer account
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'zar',
-            product_data: {
-              name: 'KwikBuy Subscription',
-            },
-            unit_amount: priceId, // Price in cents (1 ZAR = 100 cents)
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      customer_email: user.emailAddresses[0]?.emailAddress, // 👈 Autofill the email field in Stripe
+      mode: 'subscription', // or 'payment' if using one-time payments
+      customer: stripeCustomerId, // 👈 Email is locked to this customer!
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
